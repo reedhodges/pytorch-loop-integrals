@@ -70,10 +70,8 @@ def generate_integrand_and_check_divergence():
         classification = 0
     elif IR_divergent and not UV_divergent:
         classification = 1
-    elif not IR_divergent and UV_divergent:
-        classification = 2
     else:
-        classification = 3
+        classification = 2
     
     return integrand, classification
 
@@ -85,12 +83,33 @@ with open('integrand_data.csv', mode='w') as file:
         integrand, classification = generate_integrand_and_check_divergence()
         writer.writerow([integrand, classification])
 
+import os
 import matplotlib.pyplot as plt
 import matplotlib
+import pandas as pd
+from tqdm import tqdm
+from sklearn.model_selection import train_test_split
 
-matplotlib.rcParams['text.usetex'] = True
+def create_and_save_images(df, data_type):
+    print(f"Processing {data_type} data...")
+    matplotlib.rcParams['text.usetex'] = True
+    for i, row in tqdm(df.iterrows()):
 
-latex_string = r"$\int d^6p \frac{1}{(p^2 - m_3^2)(p^2 - m_3^2)^3(p^2 - m_1^2)^2}$"
-fig = plt.figure()
-plt.text(0.5, 0.5, latex_string, fontsize=32, va='center', ha='center')
-plt.axis('off')
+        latex_string = row["Integrand"]
+        class_idx = row["Divergence Classification"]
+        directory_path = f"data/{data_type}/class_{class_idx}"
+        os.makedirs(directory_path, exist_ok=True) 
+        
+        plt.figure()
+        plt.text(0.5, 0.5, latex_string, fontsize=32, va='center', ha='center')
+        plt.axis('off')
+        plt.savefig(f"{directory_path}/integrand_{i}.png")
+        plt.close()  
+
+def split_data_and_save_images(data_filepath, test_size=0.2, random_state=42):
+    data = pd.read_csv(data_filepath)
+    train_data, test_data = train_test_split(data, test_size=test_size, random_state=random_state)
+    create_and_save_images(train_data, "train")
+    create_and_save_images(test_data, "test")
+
+split_data_and_save_images("integrand_data.csv")

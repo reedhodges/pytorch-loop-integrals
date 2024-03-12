@@ -35,14 +35,6 @@ test_dataset = datasets.ImageFolder(root=test_path, transform=data_transform)
 class_names = train_dataset.classes
 class_dict = train_dataset.class_to_idx
 
-def plot_random_image():
-    random_image_path = random.choice(image_path_list)
-    im = Image.open(random_image_path)
-    im = data_transform(im)
-    plt.imshow(im.permute(1, 2, 0))
-    plt.title(random_image_path.parent.name)
-    plt.show()
-
 BATCH_SIZE = 32
 NUM_WORKERS = 0 #os.cpu_count()
 

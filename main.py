@@ -32,20 +32,26 @@ model = efficientnet_b0(weights=weights).to(device)
 
 data_transform = weights.transforms()
 
-train_dataset = datasets.ImageFolder(root=train_path, transform=data_transform)
-test_dataset = datasets.ImageFolder(root=test_path, transform=data_transform)
+for param in model.features.parameters():
+    param.requires_grad = False
 
-class_names = train_dataset.classes
-class_dict = train_dataset.class_to_idx
+
+def create_data_loaders(data_path, batch_size=32, num_workers=0, train_transform=None, test_transform=None):
+    train_dataset = datasets.ImageFolder(root=data_path / 'train', transform=train_transform)
+    test_dataset = datasets.ImageFolder(root=data_path / 'test', transform=test_transform)
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+    class_names = train_dataset.classes
+    class_dict = train_dataset.class_to_idx
+
+    return train_loader, test_loader, class_names, class_dict
 
 BATCH_SIZE = 32
 NUM_WORKERS = 0 #os.cpu_count()
 
-train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, shuffle=False)
-
-for param in model.features.parameters():
-    param.requires_grad = False
+train_loader, test_loader, class_names, class_dict = create_data_loaders(data_path, batch_size=BATCH_SIZE, num_workers=NUM_WORKERS, train_transform=data_transform, test_transform=data_transform)
 
 model.classifier = nn.Sequential(
     nn.Dropout(p=0.2, inplace=True),
@@ -56,62 +62,48 @@ model.classifier = nn.Sequential(
 loss_fn = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-NUM_EPOCHS = 3
-
-for epoch in tqdm(range(NUM_EPOCHS)):
-    train_loss = 0.0
-    train_correct = 0
-    train_total = 0
-
+def train_step(model, data_loader, loss_fn, optimizer):
     model.train()
-    for images, labels in train_loader:
-        images = images.to(device)
-        labels = labels.to(device)
-
+    total_loss = 0
+    correct = 0
+    for inputs, targets in data_loader:
+        inputs, targets = inputs.to(device), targets.to(device)
         optimizer.zero_grad()
-
-        outputs = model(images)
-        _, predicted = torch.max(outputs.data, 1)
-
-        loss = loss_fn(outputs, labels)
+        outputs = model(inputs)
+        loss = loss_fn(outputs, targets)
         loss.backward()
         optimizer.step()
+        total_loss += loss.item()
+        _, predicted = torch.max(outputs.data, 1)
+        correct += (predicted == targets).sum().item()
+    return total_loss / len(data_loader), correct / len(data_loader.dataset)
 
-        train_loss += loss.item()
-        train_total += labels.size(0)
-        train_correct += (predicted == labels).sum().item()
-
-    train_accuracy = 100 * train_correct / train_total
-
-    test_loss = 0.0
-    test_correct = 0
-    test_total = 0
-
+def test_step(model, data_loader, loss_fn):
     model.eval()
+    total_loss = 0
+    correct = 0
     with torch.inference_mode():
-        for images, labels in test_loader:
-            images = images.to(device)
-            labels = labels.to(device)
-
-            outputs = model(images)
+        for inputs, targets in data_loader:
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = model(inputs)
+            loss = loss_fn(outputs, targets)
+            total_loss += loss.item()
             _, predicted = torch.max(outputs.data, 1)
+            correct += (predicted == targets).sum().item()
+    return total_loss / len(data_loader), correct / len(data_loader.dataset)
 
-            loss = loss_fn(outputs, labels)
+NUM_EPOCHS = 3
 
-            test_loss += loss.item()
-            test_total += labels.size(0)
-            test_correct += (predicted == labels).sum().item()
+def train(model, train_loader, test_loader, loss_fn, optimizer, epochs=10):
+    for epoch in tqdm(range(epochs)):
+        train_loss, train_accuracy = train_step(model, train_loader, loss_fn, optimizer)
+        test_loss, test_accuracy = test_step(model, test_loader, loss_fn)
+        print(f'Epoch {epoch+1}, Train Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.2f}, '
+              f'Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.2f}')
+        
+train(model, train_loader, test_loader, loss_fn, optimizer, epochs=NUM_EPOCHS)
 
-    test_accuracy = 100 * test_correct / test_total
-
-    print(f"Epoch: {epoch+1}/{NUM_EPOCHS}")
-    print(f"Train Loss: {train_loss/train_total:.4f}")
-    print(f"Train Accuracy: {train_accuracy:.2f}%")
-    print(f"Test Loss: {test_loss/test_total:.4f}")
-    print(f"Test Accuracy: {test_accuracy:.2f}%")
-    print()
-
-torch.save(model.state_dict(), "models/efficientnet_b0.pth")
+#torch.save(model.state_dict(), "models/efficientnet_b0.pth")
 
 # function to predict the class of an image
 def predict_class(image_path, model, class_dict, data_transform):
@@ -128,4 +120,4 @@ def predict_class(image_path, model, class_dict, data_transform):
         return print(f"Predicted class: {class_name}")
     
 # test the function
-predict_class("custom_images/IMG_5FAB788BE67E-1.png", model, class_dict, data_transform)
+#predict_class("custom_images/IMG_5FAB788BE67E-1.png", model, class_dict, data_transform)

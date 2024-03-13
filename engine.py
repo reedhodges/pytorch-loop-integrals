@@ -99,5 +99,6 @@ def train(device, model, train_loader, test_loader, loss_fn, optimizer, epochs=1
     for epoch in tqdm(range(epochs)):
         train_loss, train_accuracy = train_step(device, model, train_loader, loss_fn, optimizer)
         test_loss, test_accuracy = test_step(device, model, test_loader, loss_fn)
-        print(f'Epoch {epoch+1}\nTrain Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}'
-              f'\nTest Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}')
+        print('-' * 30)
+        print(f'\nEpoch {epoch+1}\nTrain Loss: {train_loss:.4f}, Train Accuracy: {train_accuracy:.4f}'
+              f'\nTest Loss:  {test_loss:.4f}, Test Accuracy:   {test_accuracy:.4f}')

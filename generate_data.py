@@ -3,6 +3,12 @@ import random
 masses = ["m_" + str(i) for i in range(1, 5)]
 
 def generate_massless_propagator():
+    """
+    Generate a massless propagator.
+
+    Returns:
+        tuple: A tuple containing the massless propagator expression and its power.
+    """
     pwr = random.randint(0, 3)
     if pwr == 0:
         return "", pwr
@@ -12,6 +18,12 @@ def generate_massless_propagator():
         return f"(p^2)^{pwr}", pwr
 
 def generate_massive_propagator():
+    """
+    Generate a massive propagator.
+
+    Returns:
+        tuple: A tuple containing the massive propagator expression and its power.
+    """
     pwr = random.randint(1, 3)
     mass_idx = random.randint(0, len(masses)-1)
     if pwr == 1:
@@ -20,6 +32,12 @@ def generate_massive_propagator():
         return f"(p^2 - {masses[mass_idx]}^2)^{pwr}", pwr
 
 def generate_numerator():
+    """
+    Generate a numerator.
+
+    Returns:
+        tuple: A tuple containing the numerator expression and its power.
+    """
     pwr = random.randint(0, 3)
     if pwr == 0:
         return "1", pwr
@@ -29,6 +47,13 @@ def generate_numerator():
         return f"(p^2)^{pwr}", pwr
 
 def construct_integrand():
+    """
+    Construct an integrand.
+
+    Returns:
+        tuple: A tuple containing the integrand expression, dimension, numerator power,
+               massless propagator power, and sum of massive propagator powers.
+    """
     dimension = random.randint(2, 8)
     numerator, num_pwr = generate_numerator()
 
@@ -56,6 +81,12 @@ def construct_integrand():
     return integrand, dimension, num_pwr, massless_pwr, sum_massive_pwr
 
 def generate_integrand_and_check_divergence():
+    """
+    Generate an integrand and check its divergence.
+
+    Returns:
+        tuple: A tuple containing the integrand expression and its divergence classification.
+    """
     integrand, dimension, num_pwr, massless_pwr, sum_massive_pwr = construct_integrand()
     IR_divergent = False
     UV_divergent = False
@@ -91,6 +122,13 @@ from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 
 def create_and_save_images(df, data_type):
+    """
+    Create and save images for integrands.
+
+    Args:
+        df (DataFrame): Pandas DataFrame containing integrands and their classifications.
+        data_type (str): Type of data (e.g., 'train', 'test').
+    """
     print(f"Processing {data_type} data...")
     matplotlib.rcParams['text.usetex'] = True
     for i, row in tqdm(df.iterrows()):
@@ -107,6 +145,14 @@ def create_and_save_images(df, data_type):
         plt.close()  
 
 def split_data_and_save_images(data_filepath, test_size=0.2, random_state=42):
+    """
+    Split data into train and test sets and save images for integrands.
+
+    Args:
+        data_filepath (str): Filepath of the CSV file containing integrands.
+        test_size (float): Size of the test set as a fraction of the whole dataset.
+        random_state (int): Random seed for reproducibility.
+    """
     data = pd.read_csv(data_filepath)
     train_data, test_data = train_test_split(data, test_size=test_size, random_state=random_state)
     create_and_save_images(train_data, "train")

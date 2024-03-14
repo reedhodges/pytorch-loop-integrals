@@ -2,7 +2,7 @@
 
 Playing around with training neural networks to classify loop integrals in quantum field theory based on whether they are UV divergent, IR divergent, or not divergent.  Intended as a way for me to practice PyTorch.  This repo will keep evolving as I adapt the models and try new ones.
 
-Check out the Jupyter notebook `pytorch_loop_integrals.ipynb` for the most interesting stuff.  You can run it in your own Google Colab instance [here](https://colab.research.google.com/github/reedhodges/pytorch-loop-integrals/blob/main/pytorch_loop_integrals.ipynb). The rest of the files are:
+Check out the Jupyter notebook `pytorch_loop_integrals.ipynb` for the most interesting stuff.  You can run it in your own Google Colab instance [here](https://colab.research.google.com/github/reedhodges/pytorch-loop-integrals/blob/main/pytorch_loop_integrals.ipynb), or clone the repository and run it locally. The rest of the files are:
 
 - `engine.py`: all the PyTorch code I wrote to do the work behind the scenes
 - `generate_data.py`: generates the training and test data set

@@ -1,4 +1,5 @@
 import random
+import shutil
 
 masses = ["m_" + str(i) for i in range(1, 5)]
 
@@ -110,7 +111,7 @@ import csv
 with open('integrand_data.csv', mode='w') as file:
     writer = csv.writer(file)
     writer.writerow(["Integrand", "Divergence Classification"])
-    for _ in range(1000):
+    for _ in range(5000):
         integrand, classification = generate_integrand_and_check_divergence()
         writer.writerow([integrand, classification])
 
@@ -130,16 +131,24 @@ def create_and_save_images(df, data_type):
         data_type (str): Type of data (e.g., 'train', 'test').
     """
     print(f"Processing {data_type} data...")
-    matplotlib.rcParams['text.usetex'] = True
     for i, row in tqdm(df.iterrows()):
+
+        # randomly change the font
+        matplotlib.rcParams['text.usetex'] = bool(random.getrandbits(1))
 
         latex_string = row["Integrand"]
         class_idx = row["Divergence Classification"]
-        directory_path = f"data/{data_type}/class_{class_idx}"
+        class_dict = {0: "safe", 1: "ir_div", 2: "uv_div"}
+        directory_path = f"data/{data_type}/" + class_dict[class_idx]
         os.makedirs(directory_path, exist_ok=True) 
+
+        font_sizes = [16, 20, 24, 28, 32]
         
         plt.figure()
-        plt.text(0.5, 0.5, latex_string, fontsize=32, va='center', ha='center')
+        plt.text(0.5, 0.5, latex_string, 
+                 fontsize=random.choice(font_sizes), 
+                 va='center', 
+                 ha='center')
         plt.axis('off')
         plt.savefig(f"{directory_path}/integrand_{i}.png")
         plt.close()  
@@ -153,6 +162,8 @@ def split_data_and_save_images(data_filepath, test_size=0.2, random_state=42):
         test_size (float): Size of the test set as a fraction of the whole dataset.
         random_state (int): Random seed for reproducibility.
     """
+    print("Deleting old data...")
+    shutil.rmtree("data")
     data = pd.read_csv(data_filepath)
     train_data, test_data = train_test_split(data, test_size=test_size, random_state=random_state)
     create_and_save_images(train_data, "train")

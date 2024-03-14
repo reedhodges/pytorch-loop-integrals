@@ -4,3 +4,5 @@
 .DS_Store
 *.pth
 scratch.py
+*.DS_Store
+*.pyc

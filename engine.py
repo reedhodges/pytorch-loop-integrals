@@ -2,6 +2,7 @@ import torch
 from torchvision import datasets
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+import wandb
 
 def create_data_loaders(data_path, batch_size=32, num_workers=0, train_transform=None, test_transform=None):
     """
@@ -102,3 +103,5 @@ def train(device, model, train_loader, test_loader, loss_fn, optimizer, epochs=1
         print('\n' + '-' * 30)
         print(f'\nEpoch {epoch+1}\nTrain Loss: {train_loss:.4f}, Train Accuracy: {100*train_accuracy:.2f}'
               f'\nTest Loss:  {test_loss:.4f}, Test Accuracy:  {100*test_accuracy:.2f}')
+        wandb.log({"Train Loss": train_loss, "Train Accuracy": 100*train_accuracy,
+                   "Test Loss": test_loss, "Test Accuracy": 100*test_accuracy})

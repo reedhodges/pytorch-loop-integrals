@@ -6,3 +6,4 @@
 scratch.py
 *.DS_Store
 *.pyc
+/wandb

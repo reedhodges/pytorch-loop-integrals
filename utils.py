@@ -2,7 +2,10 @@ import random
 import torch
 from torchvision.models._api import WeightsEnum
 from torch.hub import load_state_dict_from_url
+from torchvision.datasets import ImageFolder
+from torch.utils.data import DataLoader
 from PIL import Image
+import numpy as np
 import matplotlib.pyplot as plt
 
 def plot_random_image(image_path_list, data_transform):

@@ -1,6 +1,8 @@
 import random
 import shutil
 
+DATASET_SIZE = 1000
+
 masses = ["m_" + str(i) for i in range(1, 5)]
 
 def generate_massless_propagator():
@@ -111,7 +113,7 @@ import csv
 with open('integrand_data.csv', mode='w') as file:
     writer = csv.writer(file)
     writer.writerow(["Integrand", "Divergence Classification"])
-    for _ in range(5000):
+    for _ in range(DATASET_SIZE):
         integrand, classification = generate_integrand_and_check_divergence()
         writer.writerow([integrand, classification])
 

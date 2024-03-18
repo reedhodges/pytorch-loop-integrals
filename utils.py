@@ -61,3 +61,14 @@ def get_state_dict(self, *args, **kwargs):
 
 def fix_error_with_weights_download():
     WeightsEnum.get_state_dict = get_state_dict
+
+def set_seeds(seed: int=42):
+    """
+    Sets random sets for torch operations.
+
+    Args:
+        seed (int, optional): Random seed to set. Defaults to 42.
+    """
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    
